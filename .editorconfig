@@ -1,0 +1,33 @@
+# EditorConfig file to ask editors for proper indentation & charset formats
+# See https://editorconfig.org/ for more information & documentation
+
+# Ignore any user settings above this file
+root = true
+
+# General things that we want almost everywhere:
+[*]
+insert_final_newline = true
+# lf = \n (line-feed or newline); use \n for line separators, not \r or \r\n:
+end_of_line = lf
+[*.{py,js,html,css,scss,json}]
+charset = utf-8
+
+# Our code all uses 4-space indentation:
+[*.{py,js,scss}]
+indent_style = space
+indent_size = 4
+
+# Configure external js dependencies to default to 2-space indenation:
+[**/node_modules/**.js]
+indent_style = space
+indent_size = 2
+[webapp/app/ext/**.js]
+indent_style = space
+indent_size = 2
+
+# Specific files with specific needs:
+# package.json is autoformatted to 2 spaces by npm:
+[{package.json,package-lock.json}]
+indent_style = space
+indent_size = 2
+
