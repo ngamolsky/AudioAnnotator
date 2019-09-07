@@ -11,6 +11,7 @@ class RecordButton extends React.Component {
                 className={"RecordButton"}
                 src={this.props.isRecording ? stop : record}
                 onClick={this.props.onRecordPressed}
+                alt={"Recording Button"}
             />
         );
     }

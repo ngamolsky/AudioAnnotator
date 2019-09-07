@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import RecordButton from "./RecordButton";
 import ActionButton from "./ActionButton";
 import AudioAnalyzer from "./AudioAnalyzer";
+import RecordingTimeManager from "./RecordingTimeManager";
 
 import "./App.css";
 
@@ -23,6 +24,10 @@ class App extends Component {
             recording: RECORDING_STATES.OFF,
             audio: null
         };
+
+        this._recordingTimeManager = new RecordingTimeManager(elapsedTimeMs => {
+            console.log(elapsedTimeMs);
+        }, 1000);
     }
 
     componentDidMount() {}
@@ -48,17 +53,6 @@ class App extends Component {
                             <tr>
                                 <td>
                                     <ActionButton name={"Action Item"} />
-                                </td>
-                                <td>
-                                    <ActionButton name={"Research Topic"} />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <ActionButton name={"Decision"} />
-                                </td>
-                                <td>
-                                    <ActionButton name={"Important Point"} />
                                 </td>
                             </tr>
                         </tbody>
