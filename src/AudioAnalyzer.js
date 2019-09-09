@@ -11,6 +11,7 @@ class AudioAnalyser extends Component {
             window.webkitAudioContext)();
         this.analyser = this.audioContext.createAnalyser();
         this.analyser.fftSize = 2048;
+        this.analyser.smoothingTimeConstant = 0.1;
         this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
         this.state = {};
     }
@@ -26,19 +27,21 @@ class AudioAnalyser extends Component {
                 this.props.audio
             );
             this.source.connect(this.analyser);
-            this.tickCount = 0;
             this._recordingTimeManager = new RecordingTimeManager(
                 elapsedTimeMs => {
                     this.analyser.getByteFrequencyData(this.dataArray);
-                    let values = 0;
-                    var length = this.dataArray.length;
-                    for (var i = 0; i < length; i++) {
-                        values += this.dataArray[i];
+                    let amplitude;
+                    let maxAmpltiude = 0;
+                    for (var i = 0; i < this.dataArray.length; i++) {
+                        amplitude = this.dataArray[i];
+
+                        if (amplitude > maxAmpltiude) {
+                            maxAmpltiude = amplitude;
+                        }
                     }
 
-                    let average = values / length;
                     this.setState({
-                        audioAmplitude: average
+                        audioAmplitude: maxAmpltiude
                     });
                 },
                 100
@@ -59,11 +62,7 @@ class AudioAnalyser extends Component {
     }
 
     render() {
-        return this.state.audioAmplitude > 0 ? (
-            <AudioVisualizer audioAmplitude={this.state.audioAmplitude} />
-        ) : (
-            <div style={{ height: 200, width: 800 }} />
-        );
+        return <AudioVisualizer audioAmplitude={this.state.audioAmplitude} />;
     }
 }
 
