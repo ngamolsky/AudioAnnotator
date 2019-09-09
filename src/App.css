@@ -26,7 +26,13 @@
   opacity: 0.7;
 }
 
-.Timeline {
-  margin-top: 40px;
-  width: 100%;
+.Duration {
+  margin-bottom: 40px;
+  text-align: center;
+  font-weight: lighter;
+}
+
+.AudioAnalyzer {
+  width: 70%;
+  height: 200px;
 }

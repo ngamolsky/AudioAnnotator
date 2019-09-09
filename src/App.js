@@ -3,51 +3,81 @@ import RecordButton from "./RecordButton";
 import ActionButton from "./ActionButton";
 import AudioAnalyzer from "./AudioAnalyzer";
 import RecordingTimeManager from "./RecordingTimeManager";
+import RecordingState, { RecordingStateActions } from "./RecordingState";
+import Utils from "./Utils";
 
 import "./App.css";
-
-const RECORDING_STATES = {
-    OFF: "OFF",
-    STARTING: "STARTING",
-    READY: "READY",
-    PAUSED: "PAUSED",
-    STOPPED: "STOPPED",
-    PLAYING: "PLAYING",
-    RECORDING: "RECORDING"
-};
 
 class App extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            recording: RECORDING_STATES.OFF,
-            audio: null
+            recordingState: RecordingState.OFF,
+            audioStream: null,
+            elapsedTimeMs: 0
         };
 
-        this._recordingTimeManager = new RecordingTimeManager(elapsedTimeMs => {
-            console.log(elapsedTimeMs);
-        }, 1000);
+        this._recordingTimeManager = new RecordingTimeManager(
+            this._onMsIntervalTick,
+            1000
+        );
     }
 
-    componentDidMount() {}
-
-    componentWillUnmount() {}
+    componentDidUpdate = async (prevProps, prevState) => {
+        const recordingStateAction = this.state.recordingState.compareToPrevious(
+            prevState.recordingState
+        );
+        switch (recordingStateAction) {
+            case RecordingStateActions.START:
+                let stream = await this.requestPermission();
+                this._recordingTimeManager.start();
+                this.setState({
+                    recordingState: RecordingState.RECORDING,
+                    audioStream: stream
+                });
+                break;
+            case RecordingStateActions.STOP:
+                this.state.audioStream
+                    .getTracks()
+                    .forEach(track => track.stop());
+                this._recordingTimeManager.stop();
+                this.setState({
+                    recordingState: RecordingState.OFF,
+                    audioStream: null,
+                    elapsedTimeMs: 0
+                });
+                break;
+            default:
+                break;
+        }
+    };
 
     render() {
         return (
             <div className="App">
                 <header className="App-header">
+                    <h1 className="Duration">
+                        {Utils.secondsToTimeString(
+                            this.state.elapsedTimeMs / 1000
+                        )}
+                    </h1>
                     <RecordButton
                         isRecording={
-                            this.state.recording !== RECORDING_STATES.OFF
+                            this.state.recordingState ===
+                            RecordingState.RECORDING
                         }
                         onRecordPressed={this.toggleRecording}
                     />
-                    <AudioAnalyzer
-                        audio={this.state.audio}
-                        recordingState={this.state.recording}
-                    />
+                    {this.state.audioStream ? (
+                        <AudioAnalyzer
+                            className="AudioAnalyzer"
+                            recordingState={this.state.recordingState}
+                            audioStream={this.state.audioStream}
+                        />
+                    ) : (
+                        <div className="AudioAnalyzer" />
+                    )}
                     <table className="App-table" cellSpacing="12px">
                         <tbody>
                             <tr>
@@ -62,15 +92,20 @@ class App extends Component {
         );
     }
 
+    _onMsIntervalTick = elapsedTimeMs => {
+        this.setState({
+            elapsedTimeMs: elapsedTimeMs
+        });
+    };
+
     toggleRecording = async () => {
-        if (this.state.recording === RECORDING_STATES.RECORDING) {
-            this.state.audio.getTracks().forEach(track => track.stop());
-            this.setState({ recording: RECORDING_STATES.OFF });
-        } else {
-            let stream = await this.requestPermission();
+        if (this.state.recordingState === RecordingState.RECORDING) {
             this.setState({
-                audio: stream,
-                recording: RECORDING_STATES.RECORDING
+                recordingState: this.state.recordingState.stop()
+            });
+        } else {
+            this.setState({
+                recordingState: this.state.recordingState.start()
             });
         }
     };

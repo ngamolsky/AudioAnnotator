@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import RecordingState from "./RecordingState";
 
 const AUDIO_BUCKET_SIZE = 128;
 
@@ -9,7 +10,9 @@ class AudioVisualiser extends Component {
         this.audioArray = [];
     }
     componentDidUpdate() {
-        this.draw();
+        if (this.props.recordingState === RecordingState.RECORDING) {
+            this.draw();
+        }
     }
 
     draw() {
@@ -35,11 +38,11 @@ class AudioVisualiser extends Component {
 
         this.audioArray.forEach((amplitude, index) => {
             var barHeight = 10 + amplitude;
-            context.fillStyle = "rgb(" + (barHeight + 100) + ",50,50)";
+            context.fillStyle = "rgb(" + (barHeight + 100) + ", 50, 50)";
             context.fillRect(
-                width - barWidth * index + 1,
+                width - barWidth * (index + 1) + 10,
                 height / 2 - barHeight / 4,
-                barWidth,
+                barWidth - 10,
                 barHeight / 2
             );
         });
