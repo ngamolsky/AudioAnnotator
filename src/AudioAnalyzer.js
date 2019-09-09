@@ -5,11 +5,14 @@ import RecordingTimeManager from "./RecordingTimeManager";
 class AudioAnalyser extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            hasSignal: false
-        };
 
         this.hasStarted = false;
+        this.audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+        this.analyser = this.audioContext.createAnalyser();
+        this.analyser.fftSize = 2048;
+        this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+        this.state = {};
     }
 
     componentDidUpdate() {
@@ -19,15 +22,11 @@ class AudioAnalyser extends Component {
             !this.hasStarted
         ) {
             this.hasStarted = true;
-            this.audioContext = new (window.AudioContext ||
-                window.webkitAudioContext)();
-            this.analyser = this.audioContext.createAnalyser();
-            this.analyser.fftSize = 128;
-            this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
             this.source = this.audioContext.createMediaStreamSource(
                 this.props.audio
             );
             this.source.connect(this.analyser);
+            this.tickCount = 0;
             this._recordingTimeManager = new RecordingTimeManager(
                 elapsedTimeMs => {
                     this.analyser.getByteFrequencyData(this.dataArray);
@@ -38,13 +37,7 @@ class AudioAnalyser extends Component {
                     }
 
                     let average = values / length;
-                    console.log(average);
-                    let newState = {};
-                    if (average > 0) {
-                        newState.hasSignal = true;
-                    }
                     this.setState({
-                        ...newState,
                         audioAmplitude: average
                     });
                 },
@@ -66,7 +59,7 @@ class AudioAnalyser extends Component {
     }
 
     render() {
-        return this.state.hasSignal ? (
+        return this.state.audioAmplitude > 0 ? (
             <AudioVisualizer audioAmplitude={this.state.audioAmplitude} />
         ) : (
             <div style={{ height: 200, width: 800 }} />
