@@ -4,6 +4,7 @@ import ActionButton from "./ActionButton";
 import AudioAnalyzer from "./AudioAnalyzer";
 import RecordingTimeManager from "./RecordingTimeManager";
 import RecordingState, { RecordingStateActions } from "./RecordingState";
+import { ActionItemAnnotation } from "./Annotation";
 import Utils from "./Utils";
 
 import "./App.css";
@@ -20,7 +21,7 @@ class App extends Component {
 
         this._recordingTimeManager = new RecordingTimeManager(
             this._onMsIntervalTick,
-            1000
+            10
         );
     }
 
@@ -82,7 +83,18 @@ class App extends Component {
                         <tbody>
                             <tr>
                                 <td>
-                                    <ActionButton name={"Action Item"} />
+                                    <ActionButton
+                                        name={"Action Item"}
+                                        onAnnotationButtonClicked={buttonName => {
+                                            if (buttonName === "Action Item") {
+                                                const actionItem = new ActionItemAnnotation(
+                                                    this.state.elapsedTimeMs
+                                                );
+
+                                                console.log(actionItem);
+                                            }
+                                        }}
+                                    />
                                 </td>
                             </tr>
                         </tbody>

@@ -1,12 +1,13 @@
-class Annotation {
-    constructor(timestamp, totalDuration) {
+export class Annotation {
+    constructor(type, timestamp, totalDuration) {
         this.timestamp = timestamp;
         this.totalDuration = totalDuration;
+        this.type = type;
     }
 }
 
-class ActionItemAnnotation extends Annotation {
+export class ActionItemAnnotation extends Annotation {
     constructor(timestamp) {
-        super(timestamp, 30);
+        super("Action Item", timestamp, 3000);
     }
 }

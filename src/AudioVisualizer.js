@@ -8,8 +8,14 @@ class AudioVisualiser extends Component {
         super(props);
         this.canvas = React.createRef();
         this.audioArray = [];
+        this.state = {};
     }
-    componentDidUpdate() {
+
+    shouldComponentUpdate(nextProps) {
+        return this.props.audioAmplitude !== nextProps.audioAmplitude;
+    }
+
+    componentDidUpdate(prevProps, prevState) {
         if (this.props.recordingState === RecordingState.RECORDING) {
             this.draw();
         }
@@ -37,7 +43,7 @@ class AudioVisualiser extends Component {
         var barWidth = width / AUDIO_BUCKET_SIZE;
 
         this.audioArray.forEach((amplitude, index) => {
-            var barHeight = 10 + amplitude;
+            var barHeight = 10 + amplitude * 0.7;
             context.fillStyle = "rgb(" + (barHeight + 100) + ", 50, 50)";
             context.fillRect(
                 width - barWidth * (index + 1) + 10,
