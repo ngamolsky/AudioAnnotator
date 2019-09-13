@@ -22,7 +22,7 @@ class AudioAnalyzer extends Component {
             if (this.props.recordingState === RecordingState.RECORDING) {
                 this._onRefreshVisualizer();
             }
-        }, 100);
+        }, 30);
     }
 
     componentWillUnmount() {
@@ -33,17 +33,14 @@ class AudioAnalyzer extends Component {
 
     _onRefreshVisualizer = () => {
         this.analyser.getByteFrequencyData(this.dataArray);
-        let amplitude;
-        let maxAmpltiude = 0;
+        let values = 0;
         for (var i = 0; i < this.dataArray.length; i++) {
-            amplitude = this.dataArray[i];
-
-            if (amplitude > maxAmpltiude) {
-                maxAmpltiude = amplitude;
-            }
+            values += this.dataArray[i];
         }
+
+        let average = values / this.dataArray.length;
         this.setState({
-            audioAmplitude: maxAmpltiude
+            audioAmplitude: average
         });
     };
 
