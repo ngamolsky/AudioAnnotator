@@ -6,6 +6,7 @@ import RecordingTimeManager from "./RecordingTimeManager";
 import RecordingState, { RecordingStateActions } from "./RecordingState";
 import { ActionItemAnnotation } from "./Annotation";
 import Utils from "./Utils";
+import { RecordRTCPromisesHandler } from "recordrtc";
 
 import "./App.css";
 
@@ -33,15 +34,22 @@ class App extends Component {
             case RecordingStateActions.START:
                 let stream = await this.requestPermission();
                 this._recordingTimeManager.start();
+                this._recorder = new RecordRTCPromisesHandler(stream, {
+                    type: "audio"
+                });
+                await this._recorder.startRecording();
+
                 this.setState({
                     recordingState: RecordingState.RECORDING,
                     audioStream: stream
                 });
                 break;
             case RecordingStateActions.STOP:
-                this.state.audioStream
-                    .getTracks()
-                    .forEach(track => track.stop());
+                await this._recorder.stopRecording();
+                let blob = await this._recorder.getBlob();
+                console.log(blob);
+                let dataUrl = await this._recorder.getDataURL();
+                console.log(dataUrl);
                 this._recordingTimeManager.stop();
                 this.setState({
                     recordingState: RecordingState.OFF,
