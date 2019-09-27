@@ -1,12 +1,15 @@
 import React, { Component } from "react";
-import RecordButton from "./RecordButton";
 import ActionButton from "./ActionButton";
 import AudioAnalyzer from "./AudioAnalyzer";
 import RecordingTimeManager from "./RecordingTimeManager";
 import RecordingState, { RecordingStateActions } from "./RecordingState";
 import { ActionItemAnnotation } from "./Annotation";
 import Utils from "./Utils";
-import { RecordRTCPromisesHandler } from "recordrtc";
+import { RecordRTCPromisesHandler, getSeekableBlob } from "recordrtc";
+import ReactAudioPlayer from "react-audio-player";
+import Fab from "@material-ui/core/Fab";
+import PlayArrow from "@material-ui/icons/PlayArrow";
+import PauseIcon from "@material-ui/icons/Pause";
 
 import "./App.css";
 
@@ -26,6 +29,13 @@ class App extends Component {
         );
     }
 
+    componentDidMount = () => {
+        const script = document.createElement("script");
+        script.src = "https://cdn.webrtc-experiment.com/EBML.js";
+        script.async = true;
+        document.body.appendChild(script);
+    };
+
     componentDidUpdate = async (prevProps, prevState) => {
         const recordingStateAction = this.state.recordingState.compareToPrevious(
             prevState.recordingState
@@ -38,6 +48,9 @@ class App extends Component {
                     type: "audio"
                 });
                 await this._recorder.startRecording();
+                if (this._audioAnalyzer) {
+                    this._audioAnalyzer.resume();
+                }
 
                 this.setState({
                     recordingState: RecordingState.RECORDING,
@@ -46,16 +59,19 @@ class App extends Component {
                 break;
             case RecordingStateActions.STOP:
                 await this._recorder.stopRecording();
-                let blob = await this._recorder.getBlob();
-                console.log(blob);
-                let dataUrl = await this._recorder.getDataURL();
-                console.log(dataUrl);
-                this._recordingTimeManager.stop();
-                this.setState({
-                    recordingState: RecordingState.OFF,
-                    audioStream: null,
-                    elapsedTimeMs: 0
-                });
+                getSeekableBlob(
+                    await this._recorder.getBlob(),
+                    seekableBlob => {
+                        this._recordingTimeManager.stop();
+                        this._audioAnalyzer.pause();
+                        this.setState({
+                            recordingState: RecordingState.OFF,
+                            audioUrl: URL.createObjectURL(seekableBlob),
+                            elapsedTimeMs: 0
+                        });
+                    }
+                );
+
                 break;
             default:
                 break;
@@ -71,22 +87,42 @@ class App extends Component {
                             this.state.elapsedTimeMs / 1000
                         )}
                     </h1>
-                    <RecordButton
-                        isRecording={
-                            this.state.recordingState ===
-                            RecordingState.RECORDING
-                        }
-                        onRecordPressed={this.toggleRecording}
-                    />
+                    <Fab aria-label="delete" onClick={this.toggleRecording}>
+                        {this.state.recordingState ===
+                        RecordingState.RECORDING ? (
+                            <PauseIcon />
+                        ) : (
+                            <PlayArrow />
+                        )}
+                    </Fab>
                     {this.state.audioStream ? (
                         <AudioAnalyzer
                             className="AudioAnalyzer"
+                            ref={element => {
+                                if (element) {
+                                    this._audioAnalyzer = element;
+                                }
+                            }}
                             recordingState={this.state.recordingState}
                             audioStream={this.state.audioStream}
                         />
                     ) : (
-                        <div className="AudioAnalyzer" />
+                        <div className={"AudioAnalyzer"} />
                     )}
+
+                    {this.state.audioUrl && (
+                        <ReactAudioPlayer
+                            className={"AudioPlayer"}
+                            src={this.state.audioUrl}
+                            ref={element => {
+                                if (element) {
+                                    this._audioPlayer = element;
+                                }
+                            }}
+                            controls
+                        />
+                    )}
+
                     <table className="App-table" cellSpacing="12px">
                         <tbody>
                             <tr>

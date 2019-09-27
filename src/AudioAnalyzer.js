@@ -10,9 +10,10 @@ class AudioAnalyzer extends Component {
         this.analyser = this.audioContext.createAnalyser();
         this.analyser.smoothingTimeConstant = 0;
         this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-        this.source = this.audioContext.createMediaStreamSource(
-            props.audioStream
-        );
+        this.source = props.audioStream
+            ? this.audioContext.createMediaStreamSource(props.audioStream)
+            : null;
+
         this.source.connect(this.analyser);
         this.state = {};
     }
@@ -30,6 +31,18 @@ class AudioAnalyzer extends Component {
         this.analyser.disconnect();
         this.source.disconnect();
     }
+
+    resume = () => {
+        this.timerID = setInterval(() => {
+            if (this.props.recordingState === RecordingState.RECORDING) {
+                this._onRefreshVisualizer();
+            }
+        }, 30);
+    };
+
+    pause = () => {
+        clearInterval(this.timerID);
+    };
 
     _onRefreshVisualizer = () => {
         this.analyser.getByteFrequencyData(this.dataArray);

@@ -37,3 +37,8 @@
   width: 70%;
   height: 200px;
 }
+
+.AudioPlayer {
+  width: 50%;
+  outline-width: 0;
+}

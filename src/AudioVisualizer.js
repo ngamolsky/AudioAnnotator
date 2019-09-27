@@ -43,7 +43,7 @@ class AudioVisualiser extends Component {
         var barWidth = width / AUDIO_BUCKET_SIZE;
 
         this.audioArray.forEach((amplitude, index) => {
-            var barHeight = 10 + amplitude * 2;
+            var barHeight = 10 + amplitude * 4;
             context.fillStyle = "rgb(" + (barHeight + 100) + ", 50, 50)";
             context.fillRect(
                 width - barWidth * (index + 1) + 10,
