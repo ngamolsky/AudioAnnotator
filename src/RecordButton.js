@@ -1,25 +1,50 @@
 import React from "react";
-import PropTypes from "prop-types";
-import record from "./assets/record.svg";
-import stop from "./assets/stop.svg";
-import "./App.css";
+import { withStyles } from "@material-ui/styles";
+import Fab from "@material-ui/core/Fab";
+import Mic from "@material-ui/icons/Mic";
+import ReplayIcon from "@material-ui/icons/Replay";
+import Stop from "@material-ui/icons/Stop";
+import RecordingState from "./RecordingState";
+
+import red from "@material-ui/core/colors/red";
+
+const styles = {
+    RecordingButton: {
+        height: "60px",
+        width: "60px",
+        marginBottom: "70px",
+        backgroundColor: red["600"],
+        "&:hover": {
+            backgroundColor: red["200"]
+        },
+        color: "#fff"
+    },
+    RecordingButtonLabel: {
+        height: "30px",
+        width: "30px"
+    }
+};
 
 class RecordButton extends React.Component {
     render() {
+        const { classes } = this.props;
+
         return (
-            <img
-                className={"RecordButton"}
-                src={this.props.isRecording ? stop : record}
-                onClick={this.props.onRecordPressed}
-                alt={"Recording Button"}
-            />
+            <Fab
+                className={classes.RecordingButton}
+                aria-label="record"
+                onClick={this.props.onClick}
+            >
+                {this.props.recordingState === RecordingState.RECORDING ? (
+                    <Stop className={classes.RecordingButtonLabel} />
+                ) : this.props.hasRecording ? (
+                    <ReplayIcon className={classes.RecordingButtonLabel} />
+                ) : (
+                    <Mic className={classes.RecordingButtonLabel} />
+                )}
+            </Fab>
         );
     }
 }
 
-RecordButton.propTypes = {
-    isRecording: PropTypes.bool,
-    onRecordPressed: PropTypes.func
-};
-
-export default RecordButton;
+export default withStyles(styles)(RecordButton);

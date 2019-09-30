@@ -11,7 +11,8 @@
     "react-dom": "^16.8.3",
     "react-hot-loader": "^4.12.14",
     "react-scripts": "^2.1.8",
-    "recordrtc": "^5.5.8"
+    "recordrtc": "^5.5.8",
+    "uuid": "^3.3.3"
   },
   "scripts": {
     "start": "react-scripts start",

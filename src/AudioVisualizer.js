@@ -1,30 +1,139 @@
 import React, { Component } from "react";
 import RecordingState from "./RecordingState";
+import { withStyles } from "@material-ui/styles";
 
-const AUDIO_BUCKET_SIZE = 128;
+const BAR_WIDTH_PX = 6;
+const REFRESH_INTERVAL_MS = 30;
+const CANVAS_MIN_WIDTH = 800;
 
-class AudioVisualiser extends Component {
+const styles = {
+    Scroll: {
+        width: "800px",
+        height: "200px",
+        overflow: "hidden",
+        direction: "rtl",
+        margin: "20px",
+        flexGrow: "1",
+        alignSelf: "center"
+    },
+    Canvas: {
+        float: "right"
+    }
+};
+
+class AudioVisualizer extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            audioArray: [],
+            width: 0
+        };
+
         this.canvas = React.createRef();
-        this.audioArray = [];
-        this.state = {};
     }
 
-    shouldComponentUpdate(nextProps) {
-        return this.props.audioAmplitude !== nextProps.audioAmplitude;
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (this.props.recordingState === RecordingState.RECORDING) {
-            this.draw();
+    componentDidUpdate = (prevProps, prevState) => {
+        if (prevState.audioArray !== this.state.audioArray) {
+            this._draw();
         }
-    }
+        const prevAudioItem = prevProps.audioItem;
+        const audioItem = this.props.audioItem;
+        if (!prevAudioItem.hasMedia() && audioItem.hasMedia()) {
+            this.audioContext = new (window.AudioContext ||
+                window.webkitAudioContext)();
 
-    draw() {
-        const { audioAmplitude } = this.props;
+            this.analyser = this.audioContext.createAnalyser();
+            this.analyser.smoothingTimeConstant = 0;
+            this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
 
+            if (audioItem.stream) {
+                this.source = this.audioContext.createMediaStreamSource(
+                    audioItem.stream
+                );
+                this.source.connect(this.analyser);
+            } else if (audioItem.url) {
+                console.log("HAVE URL");
+            }
+
+            this.timerID = setInterval(() => {
+                if (this.props.recordingState === RecordingState.RECORDING) {
+                    this._onRefreshVisualizer();
+                }
+            }, REFRESH_INTERVAL_MS);
+        } else if (prevProps.audioStream && this.props.audioStream == null) {
+            this.analyser.disconnect();
+            this.source.disconnect();
+            this.setState({
+                audioArray: [],
+                width: CANVAS_MIN_WIDTH
+            });
+        }
+    };
+
+    componentWillUnmount = () => {
+        clearInterval(this.timerID);
+
+        this.analyser.disconnect();
+        this.source.disconnect();
+    };
+
+    stop = () => {
+        clearInterval(this.timerID);
+    };
+
+    _onRefreshVisualizer = () => {
+        this.analyser.getByteFrequencyData(this.dataArray);
+        let values = 0;
+        for (var i = 0; i < this.dataArray.length; i++) {
+            values += this.dataArray[i];
+        }
+
+        let newAudioArray = [...this.state.audioArray];
+        if (
+            this.props.audioItem &&
+            this.props.audioItem.getAnnotationForTimestamp(
+                this.props.elapsedTimeMs
+            ) != null
+        ) {
+            const annotatedValues = this.state.audioArray.slice(-50).map(
+                chunk =>
+                    (chunk = {
+                        amplitude: chunk.amplitude,
+                        annotated: true
+                    })
+            );
+
+            newAudioArray.splice(
+                newAudioArray.length - annotatedValues.length,
+                50,
+                ...annotatedValues
+            );
+        }
+
+        const average = values / this.dataArray.length;
+
+        if (average > 0) {
+            this.setState({
+                width: this.state.audioArray.length * BAR_WIDTH_PX,
+                audioArray: [
+                    ...newAudioArray,
+                    {
+                        amplitude: average,
+                        annotated:
+                            this.props.audioItem &&
+                            this.props.audioItem.getAnnotationForTimestamp(
+                                this.props.elapsedTimeMs
+                            ) != null
+                    }
+                ]
+            });
+        }
+    };
+
+    _draw = () => {
         const canvas = this.canvas.current;
+
         const height = canvas.height;
         const width = canvas.width;
 
@@ -32,31 +141,33 @@ class AudioVisualiser extends Component {
 
         context.clearRect(0, 0, width, height);
 
-        if (this.audioArray.length === 0) {
-            this.audioArray[0] = audioAmplitude;
-        } else if (this.audioArray.length === AUDIO_BUCKET_SIZE) {
-            this.audioArray.pop();
-        }
+        this.state.audioArray.forEach((chunk, index) => {
+            var barHeight = 5 + chunk.amplitude;
+            context.fillStyle = chunk.annotated
+                ? "rgb(255, 215, 0)"
+                : "rgb(" + (barHeight + 100) + ", 50, 50)";
 
-        this.audioArray.unshift(audioAmplitude);
-
-        var barWidth = width / AUDIO_BUCKET_SIZE;
-
-        this.audioArray.forEach((amplitude, index) => {
-            var barHeight = 10 + amplitude * 4;
-            context.fillStyle = "rgb(" + (barHeight + 100) + ", 50, 50)";
             context.fillRect(
-                width - barWidth * (index + 1) + 10,
-                height / 2 - barHeight / 4,
-                barWidth - 10,
-                barHeight / 2
+                index * BAR_WIDTH_PX,
+                height / 2 - barHeight,
+                BAR_WIDTH_PX * 0.6,
+                barHeight * 2
             );
         });
-    }
+    };
 
     render() {
-        return <canvas width="800" height="200" ref={this.canvas} />;
+        const { classes } = this.props;
+        return (
+            <div className={classes.Scroll}>
+                <canvas
+                    className={classes.Canvas}
+                    width={this.state.width}
+                    ref={this.canvas}
+                />
+            </div>
+        );
     }
 }
 
-export default AudioVisualiser;
+export default withStyles(styles)(AudioVisualizer);

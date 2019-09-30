@@ -1,17 +1,50 @@
 import React, { Component } from "react";
+
+import { RecordRTCPromisesHandler, getSeekableBlob } from "recordrtc";
+
 import ActionButton from "./ActionButton";
-import AudioAnalyzer from "./AudioAnalyzer";
+import AudioItem from "./AudioItem";
+import RecordButton from "./RecordButton";
+import AudioVisualizer from "./AudioVisualizer";
 import RecordingTimeManager from "./RecordingTimeManager";
 import RecordingState, { RecordingStateActions } from "./RecordingState";
-import { ActionItemAnnotation } from "./Annotation";
 import Utils from "./Utils";
-import { RecordRTCPromisesHandler, getSeekableBlob } from "recordrtc";
 import ReactAudioPlayer from "react-audio-player";
-import Fab from "@material-ui/core/Fab";
-import PlayArrow from "@material-ui/icons/PlayArrow";
-import PauseIcon from "@material-ui/icons/Pause";
+import { ActionItemAnnotation } from "./Annotation";
 
-import "./App.css";
+import blueGrey from "@material-ui/core/colors/blueGrey";
+import { withStyles } from "@material-ui/styles";
+import Grid from "@material-ui/core/Grid";
+import Container from "@material-ui/core/Container";
+import Fab from "@material-ui/core/Fab";
+
+import PlayArrow from "@material-ui/icons/PlayArrow";
+
+const styles = {
+    App: {
+        height: "100%",
+        textAlign: "center",
+        background: blueGrey[800]
+    },
+    Duration: {
+        margin: 0,
+        padding: "30px",
+        textAlign: "center",
+        color: "#fff",
+        fontSize: 50,
+        fontWeight: "lighter"
+    },
+    Grid: {
+        height: "100%"
+    },
+    Annotation: {
+        padding: "4px"
+    },
+    AudioPlayer: {
+        width: "800px",
+        marginBottom: "40px"
+    }
+};
 
 class App extends Component {
     constructor(props) {
@@ -19,7 +52,7 @@ class App extends Component {
 
         this.state = {
             recordingState: RecordingState.OFF,
-            audioStream: null,
+            audioItem: new AudioItem([], null, null),
             elapsedTimeMs: 0
         };
 
@@ -48,13 +81,10 @@ class App extends Component {
                     type: "audio"
                 });
                 await this._recorder.startRecording();
-                if (this._audioAnalyzer) {
-                    this._audioAnalyzer.resume();
-                }
-
+                let annotations = this.state.audioItem.annotations;
                 this.setState({
                     recordingState: RecordingState.RECORDING,
-                    audioStream: stream
+                    audioItem: new AudioItem(annotations, null, stream)
                 });
                 break;
             case RecordingStateActions.STOP:
@@ -63,10 +93,13 @@ class App extends Component {
                     await this._recorder.getBlob(),
                     seekableBlob => {
                         this._recordingTimeManager.stop();
-                        this._audioAnalyzer.pause();
+                        this._audioAnalyzer.stop();
                         this.setState({
                             recordingState: RecordingState.OFF,
-                            audioUrl: URL.createObjectURL(seekableBlob),
+                            audioItem: {
+                                ...this.state.audioItem,
+                                url: URL.createObjectURL(seekableBlob)
+                            },
                             elapsedTimeMs: 0
                         });
                     }
@@ -79,72 +112,107 @@ class App extends Component {
     };
 
     render() {
+        const { classes } = this.props;
         return (
-            <div className="App">
-                <header className="App-header">
-                    <h1 className="Duration">
-                        {Utils.secondsToTimeString(
-                            this.state.elapsedTimeMs / 1000
-                        )}
-                    </h1>
-                    <Fab aria-label="delete" onClick={this.toggleRecording}>
-                        {this.state.recordingState ===
-                        RecordingState.RECORDING ? (
-                            <PauseIcon />
-                        ) : (
-                            <PlayArrow />
-                        )}
-                    </Fab>
-                    {this.state.audioStream ? (
-                        <AudioAnalyzer
-                            className="AudioAnalyzer"
-                            ref={element => {
-                                if (element) {
-                                    this._audioAnalyzer = element;
-                                }
-                            }}
+            <Container className={classes.App}>
+                <Grid
+                    container
+                    direction="column"
+                    alignItems="center"
+                    className={classes.Grid}
+                >
+                    <Grid item>
+                        <h1 className={classes.Duration}>
+                            {Utils.secondsToTimeString(
+                                this.state.elapsedTimeMs / 1000
+                            )}
+                        </h1>
+                    </Grid>
+                    <Grid item>
+                        <RecordButton
+                            onClick={this.toggleRecording}
                             recordingState={this.state.recordingState}
-                            audioStream={this.state.audioStream}
+                            hasRecording={
+                                this.state.audioItem &&
+                                this.state.audioItem.url != null
+                            }
                         />
-                    ) : (
-                        <div className={"AudioAnalyzer"} />
-                    )}
+                    </Grid>
+                    <Grid item style={{ flexGrow: 1 }}>
+                        {this.state.audioItem && this.state.audioItem.url ? (
+                            <ReactAudioPlayer
+                                className={classes.AudioPlayer}
+                                src={this.state.audioItem.url}
+                                controls
+                                ref={player => {
+                                    if (player) {
+                                        this._audioPlayer = player;
+                                    }
+                                }}
+                            />
+                        ) : (
+                            <AudioVisualizer
+                                ref={element => {
+                                    if (element) {
+                                        this._audioAnalyzer = element;
+                                    }
+                                }}
+                                recordingState={this.state.recordingState}
+                                audioItem={this.state.audioItem}
+                                elapsedTimeMs={this.state.elapsedTimeMs}
+                            />
+                        )}
+                        <Grid
+                            container
+                            direction="row"
+                            justify="flex-start"
+                            alignItems="center"
+                        >
+                            {this.state.audioItem &&
+                                this.state.audioItem.annotations &&
+                                this.state.audioItem.annotations.map(
+                                    annotation => (
+                                        <Grid
+                                            item
+                                            className={classes.Annotation}
+                                            key={annotation.id}
+                                        >
+                                            <Fab
+                                                disabled={
+                                                    !this.state.audioItem.url
+                                                }
+                                                onClick={() => {
+                                                    if (
+                                                        this.state.audioItem
+                                                            .url != null &&
+                                                        this._audioPlayer !=
+                                                            null
+                                                    ) {
+                                                        this._audioPlayer.audioEl.currentTime =
+                                                            (annotation.timestamp -
+                                                                annotation.totalDuration /
+                                                                    2) /
+                                                            1000;
 
-                    {this.state.audioUrl && (
-                        <ReactAudioPlayer
-                            className={"AudioPlayer"}
-                            src={this.state.audioUrl}
-                            ref={element => {
-                                if (element) {
-                                    this._audioPlayer = element;
-                                }
-                            }}
-                            controls
+                                                        this._audioPlayer.audioEl.play();
+                                                    }
+                                                }}
+                                            >
+                                                <PlayArrow />
+                                            </Fab>
+                                        </Grid>
+                                    )
+                                )}
+                        </Grid>
+                    </Grid>
+                    <Grid item>
+                        <ActionButton
+                            name={"Action Item"}
+                            onAnnotationButtonClicked={this._onAnnotationButtonClicked()}
                         />
-                    )}
-
-                    <table className="App-table" cellSpacing="12px">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <ActionButton
-                                        name={"Action Item"}
-                                        onAnnotationButtonClicked={buttonName => {
-                                            if (buttonName === "Action Item") {
-                                                const actionItem = new ActionItemAnnotation(
-                                                    this.state.elapsedTimeMs
-                                                );
-
-                                                console.log(actionItem);
-                                            }
-                                        }}
-                                    />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </header>
-            </div>
+                    </Grid>
+                </Grid>
+            </Container>
         );
     }
 
@@ -159,10 +227,16 @@ class App extends Component {
             this.setState({
                 recordingState: this.state.recordingState.stop()
             });
-        } else {
-            this.setState({
-                recordingState: this.state.recordingState.start()
-            });
+        } else if (this.state.recordingState === RecordingState.OFF) {
+            if (this.state.audioItem && this.state.audioItem.url == null) {
+                this.setState({
+                    recordingState: this.state.recordingState.start()
+                });
+            } else {
+                this.setState({
+                    audioItem: new AudioItem([], null, null)
+                });
+            }
         }
     };
 
@@ -174,6 +248,25 @@ class App extends Component {
 
         return stream;
     };
+
+    _onAnnotationButtonClicked() {
+        return buttonName => {
+            if (buttonName === "Action Item") {
+                const actionItem = new ActionItemAnnotation(
+                    this.state.elapsedTimeMs
+                );
+                const prevAudioItem = this.state.audioItem;
+                let newAudioItem = new AudioItem(
+                    [...prevAudioItem.annotations, actionItem],
+                    prevAudioItem.url,
+                    prevAudioItem.stream
+                );
+                this.setState({
+                    audioItem: newAudioItem
+                });
+            }
+        };
+    }
 }
 
-export default App;
+export default withStyles(styles)(App);
