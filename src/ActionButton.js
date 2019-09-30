@@ -16,7 +16,7 @@ const styles = {
         color: "#fff",
         fontWeight: "lighter",
         marginTop: "20px",
-        marginBottom: "20px"
+        marginBottom: "60px"
     }
 };
 

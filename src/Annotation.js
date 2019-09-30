@@ -10,6 +10,6 @@ export class Annotation {
 
 export class ActionItemAnnotation extends Annotation {
     constructor(timestamp) {
-        super("Action Item", timestamp, 3000);
+        super("Action Item", timestamp, 10000);
     }
 }

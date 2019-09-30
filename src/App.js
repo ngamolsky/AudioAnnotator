@@ -38,7 +38,12 @@ const styles = {
         height: "100%"
     },
     Annotation: {
-        padding: "4px"
+        padding: "8px"
+    },
+    AnnotationIcon: {
+        height: "30px",
+        width: "30px",
+        marginRight: "2px"
     },
     AudioPlayer: {
         width: "800px",
@@ -178,6 +183,7 @@ class App extends Component {
                                             key={annotation.id}
                                         >
                                             <Fab
+                                                variant="extended"
                                                 disabled={
                                                     !this.state.audioItem.url
                                                 }
@@ -198,7 +204,12 @@ class App extends Component {
                                                     }
                                                 }}
                                             >
-                                                <PlayArrow />
+                                                <PlayArrow
+                                                    className={
+                                                        classes.AnnotationIcon
+                                                    }
+                                                />
+                                                {annotation.type}
                                             </Fab>
                                         </Grid>
                                     )
@@ -252,9 +263,17 @@ class App extends Component {
     _onAnnotationButtonClicked() {
         return buttonName => {
             if (buttonName === "Action Item") {
-                const actionItem = new ActionItemAnnotation(
-                    this.state.elapsedTimeMs
-                );
+                let actionItem;
+                if (this.state.recordingState === RecordingState.RECORDING) {
+                    actionItem = new ActionItemAnnotation(
+                        this.state.elapsedTimeMs
+                    );
+                } else {
+                    actionItem = new ActionItemAnnotation(
+                        this._audioPlayer.audioEl.currentTime * 1000
+                    );
+                }
+
                 const prevAudioItem = this.state.audioItem;
                 let newAudioItem = new AudioItem(
                     [...prevAudioItem.annotations, actionItem],

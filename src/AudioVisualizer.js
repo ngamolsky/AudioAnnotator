@@ -17,7 +17,8 @@ const styles = {
         alignSelf: "center"
     },
     Canvas: {
-        float: "right"
+        float: "right",
+        height: 200
     }
 };
 
@@ -90,29 +91,33 @@ class AudioVisualizer extends Component {
         }
 
         let newAudioArray = [...this.state.audioArray];
-        if (
+        const currentAnnotation =
             this.props.audioItem &&
             this.props.audioItem.getAnnotationForTimestamp(
                 this.props.elapsedTimeMs
-            ) != null
-        ) {
-            const annotatedValues = this.state.audioArray.slice(-50).map(
-                chunk =>
-                    (chunk = {
-                        amplitude: chunk.amplitude,
-                        annotated: true
-                    })
             );
+        if (currentAnnotation != null) {
+            const annotatedValues = this.state.audioArray
+                .slice(
+                    -currentAnnotation.totalDuration / 2 / REFRESH_INTERVAL_MS
+                )
+                .map(
+                    chunk =>
+                        (chunk = {
+                            amplitude: chunk.amplitude,
+                            annotated: true,
+                            timestamp: chunk.elapsedTimeMs
+                        })
+                );
 
             newAudioArray.splice(
                 newAudioArray.length - annotatedValues.length,
-                50,
+                currentAnnotation.totalDuration / 2 / REFRESH_INTERVAL_MS,
                 ...annotatedValues
             );
         }
 
         const average = values / this.dataArray.length;
-
         if (average > 0) {
             this.setState({
                 width: this.state.audioArray.length * BAR_WIDTH_PX,
@@ -120,11 +125,8 @@ class AudioVisualizer extends Component {
                     ...newAudioArray,
                     {
                         amplitude: average,
-                        annotated:
-                            this.props.audioItem &&
-                            this.props.audioItem.getAnnotationForTimestamp(
-                                this.props.elapsedTimeMs
-                            ) != null
+                        annotated: currentAnnotation != null,
+                        timestamp: this.props.elapsedTimeMs
                     }
                 ]
             });
