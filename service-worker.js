@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/AudioAnnotator/precache-manifest.e42c6a228ca60bf98886eb164e087485.js"
+  "/AudioAnnotator/precache-manifest.e41c82d8734da0545e40eb3f6249dc68.js"
 );
 
 workbox.clientsClaim();
