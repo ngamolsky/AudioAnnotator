@@ -71,7 +71,6 @@ class AudioVisualizer extends Component {
 
     componentWillUnmount = () => {
         clearInterval(this.timerID);
-        console.log(this.analyser);
         if (this.analyser) {
             this.analyser.disconnect();
         }

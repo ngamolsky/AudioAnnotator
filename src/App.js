@@ -124,7 +124,6 @@ class App extends Component {
     };
 
     render() {
-        console.log(this.state.audioItem.stream || this.state.audioItem.url);
         const { classes } = this.props;
         return (
             <Container className={classes.App} maxWidth={false}>
