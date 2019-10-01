@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import RecordingState from "./RecordingState";
 import { withStyles } from "@material-ui/styles";
-import { red, amber } from "@material-ui/core/colors/";
 
 const BAR_WIDTH_PX = 6;
 const REFRESH_INTERVAL_MS = 60;
@@ -63,8 +62,6 @@ class AudioVisualizer extends Component {
                 }
             }, REFRESH_INTERVAL_MS);
         } else if (prevProps.audioStream && this.props.audioStream == null) {
-            this.analyser.disconnect();
-            this.source.disconnect();
             this.setState({
                 audioArray: [],
                 width: CANVAS_MIN_WIDTH
@@ -74,9 +71,13 @@ class AudioVisualizer extends Component {
 
     componentWillUnmount = () => {
         clearInterval(this.timerID);
-
-        this.analyser.disconnect();
-        this.source.disconnect();
+        console.log(this.analyser);
+        if (this.analyser) {
+            this.analyser.disconnect();
+        }
+        if (this.source) {
+            this.source.disconnect();
+        }
     };
 
     stop = () => {

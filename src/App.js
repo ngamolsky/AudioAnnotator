@@ -124,9 +124,10 @@ class App extends Component {
     };
 
     render() {
+        console.log(this.state.audioItem.stream || this.state.audioItem.url);
         const { classes } = this.props;
         return (
-            <Container className={classes.App}>
+            <Container className={classes.App} maxWidth={false}>
                 <Grid
                     container
                     direction="column"
@@ -184,6 +185,7 @@ class App extends Component {
                     >
                         {this.state.audioItem &&
                             this.state.audioItem.annotations &&
+                            this.state.audioItem.annotations.length !== 0 &&
                             this.state.audioItem.annotations.map(annotation => (
                                 <Grid
                                     item
@@ -199,13 +201,15 @@ class App extends Component {
                                                     null &&
                                                 this._audioPlayer != null
                                             ) {
-                                                this._audioPlayer.audioEl.currentTime =
-                                                    (annotation.timestamp -
-                                                        annotation.totalDuration /
-                                                            2) /
-                                                    1000;
+                                                if (this._audioPlayer.audioEl) {
+                                                    this._audioPlayer.audioEl.currentTime =
+                                                        (annotation.timestamp -
+                                                            annotation.totalDuration /
+                                                                2) /
+                                                        1000;
 
-                                                this._audioPlayer.audioEl.play();
+                                                    this._audioPlayer.audioEl.play();
+                                                }
                                             }
                                         }}
                                     >
@@ -220,7 +224,12 @@ class App extends Component {
                     <Grid item>
                         <ActionButton
                             name={"Action Item"}
+                            durationSecondsString={"10s"}
                             onAnnotationButtonClicked={this._onAnnotationButtonClicked()}
+                            disabled={
+                                this.state.audioItem.stream == null &&
+                                this.state.audioItem.url == null
+                            }
                         />
                     </Grid>
                 </Grid>
@@ -270,9 +279,11 @@ class App extends Component {
                         this.state.elapsedTimeMs
                     );
                 } else {
-                    actionItem = new ActionItemAnnotation(
-                        this._audioPlayer.audioEl.currentTime * 1000
-                    );
+                    if (this.state.audioItem.url) {
+                        actionItem = new ActionItemAnnotation(
+                            this._audioPlayer.audioEl.currentTime * 1000
+                        );
+                    }
                 }
 
                 const prevAudioItem = this.state.audioItem;
