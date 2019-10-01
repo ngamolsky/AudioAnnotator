@@ -1,24 +1,24 @@
 import React, { Component } from "react";
 import RecordingState from "./RecordingState";
 import { withStyles } from "@material-ui/styles";
+import { red, amber } from "@material-ui/core/colors/";
 
 const BAR_WIDTH_PX = 6;
-const REFRESH_INTERVAL_MS = 30;
-const CANVAS_MIN_WIDTH = 800;
+const REFRESH_INTERVAL_MS = 60;
+const CANVAS_MIN_WIDTH = 1000;
 
 const styles = {
     Scroll: {
-        width: "800px",
-        height: "200px",
+        width: CANVAS_MIN_WIDTH,
         overflow: "hidden",
         direction: "rtl",
         margin: "20px",
-        flexGrow: "1",
-        alignSelf: "center"
+        alignSelf: "center",
+        alignItems: "center"
     },
     Canvas: {
         float: "right",
-        height: 200
+        height: "300px"
     }
 };
 
@@ -99,7 +99,7 @@ class AudioVisualizer extends Component {
         if (currentAnnotation != null) {
             const annotatedValues = this.state.audioArray
                 .slice(
-                    -currentAnnotation.totalDuration / 2 / REFRESH_INTERVAL_MS
+                    -(currentAnnotation.totalDuration / 2 / REFRESH_INTERVAL_MS)
                 )
                 .map(
                     chunk =>
@@ -118,19 +118,17 @@ class AudioVisualizer extends Component {
         }
 
         const average = values / this.dataArray.length;
-        if (average > 0) {
-            this.setState({
-                width: this.state.audioArray.length * BAR_WIDTH_PX,
-                audioArray: [
-                    ...newAudioArray,
-                    {
-                        amplitude: average,
-                        annotated: currentAnnotation != null,
-                        timestamp: this.props.elapsedTimeMs
-                    }
-                ]
-            });
-        }
+        this.setState({
+            width: this.state.audioArray.length * BAR_WIDTH_PX,
+            audioArray: [
+                ...newAudioArray,
+                {
+                    amplitude: average,
+                    annotated: currentAnnotation != null,
+                    timestamp: this.props.elapsedTimeMs
+                }
+            ]
+        });
     };
 
     _draw = () => {
@@ -144,10 +142,11 @@ class AudioVisualizer extends Component {
         context.clearRect(0, 0, width, height);
 
         this.state.audioArray.forEach((chunk, index) => {
-            var barHeight = 5 + chunk.amplitude;
-            context.fillStyle = chunk.annotated
-                ? "rgb(255, 215, 0)"
-                : "rgb(" + (barHeight + 100) + ", 50, 50)";
+            const barHeight = 5 + chunk.amplitude;
+            const opacity = 0.2 + barHeight / 50;
+            const redColor = "rgba(244, 67, 54," + opacity + ")";
+            const goldColor = "rgba(255, 196, 0," + opacity + ")";
+            context.fillStyle = chunk.annotated ? goldColor : redColor;
 
             context.fillRect(
                 index * BAR_WIDTH_PX,

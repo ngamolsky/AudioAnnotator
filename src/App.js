@@ -37,6 +37,9 @@ const styles = {
     Grid: {
         height: "100%"
     },
+    AnnotationContainer: {
+        minHeight: "100px"
+    },
     Annotation: {
         padding: "8px"
     },
@@ -45,8 +48,12 @@ const styles = {
         width: "30px",
         marginRight: "2px"
     },
+    AudioContainer: {
+        minHeight: "340px"
+    },
     AudioPlayer: {
         width: "800px",
+        marginTop: "100px",
         marginBottom: "40px"
     }
 };
@@ -143,7 +150,7 @@ class App extends Component {
                             }
                         />
                     </Grid>
-                    <Grid item style={{ flexGrow: 1 }}>
+                    <Grid item className={classes.AudioContainer}>
                         {this.state.audioItem && this.state.audioItem.url ? (
                             <ReactAudioPlayer
                                 className={classes.AudioPlayer}
@@ -167,54 +174,48 @@ class App extends Component {
                                 elapsedTimeMs={this.state.elapsedTimeMs}
                             />
                         )}
-                        <Grid
-                            container
-                            direction="row"
-                            justify="flex-start"
-                            alignItems="center"
-                        >
-                            {this.state.audioItem &&
-                                this.state.audioItem.annotations &&
-                                this.state.audioItem.annotations.map(
-                                    annotation => (
-                                        <Grid
-                                            item
-                                            className={classes.Annotation}
-                                            key={annotation.id}
-                                        >
-                                            <Fab
-                                                variant="extended"
-                                                disabled={
-                                                    !this.state.audioItem.url
-                                                }
-                                                onClick={() => {
-                                                    if (
-                                                        this.state.audioItem
-                                                            .url != null &&
-                                                        this._audioPlayer !=
-                                                            null
-                                                    ) {
-                                                        this._audioPlayer.audioEl.currentTime =
-                                                            (annotation.timestamp -
-                                                                annotation.totalDuration /
-                                                                    2) /
-                                                            1000;
+                    </Grid>
+                    <Grid
+                        container
+                        direction="row"
+                        justify="flex-start"
+                        alignItems="center"
+                        className={classes.AnnotationContainer}
+                    >
+                        {this.state.audioItem &&
+                            this.state.audioItem.annotations &&
+                            this.state.audioItem.annotations.map(annotation => (
+                                <Grid
+                                    item
+                                    className={classes.Annotation}
+                                    key={annotation.id}
+                                >
+                                    <Fab
+                                        variant="extended"
+                                        disabled={!this.state.audioItem.url}
+                                        onClick={() => {
+                                            if (
+                                                this.state.audioItem.url !=
+                                                    null &&
+                                                this._audioPlayer != null
+                                            ) {
+                                                this._audioPlayer.audioEl.currentTime =
+                                                    (annotation.timestamp -
+                                                        annotation.totalDuration /
+                                                            2) /
+                                                    1000;
 
-                                                        this._audioPlayer.audioEl.play();
-                                                    }
-                                                }}
-                                            >
-                                                <PlayArrow
-                                                    className={
-                                                        classes.AnnotationIcon
-                                                    }
-                                                />
-                                                {annotation.type}
-                                            </Fab>
-                                        </Grid>
-                                    )
-                                )}
-                        </Grid>
+                                                this._audioPlayer.audioEl.play();
+                                            }
+                                        }}
+                                    >
+                                        <PlayArrow
+                                            className={classes.AnnotationIcon}
+                                        />
+                                        {annotation.type}
+                                    </Fab>
+                                </Grid>
+                            ))}
                     </Grid>
                     <Grid item>
                         <ActionButton
