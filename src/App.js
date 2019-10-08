@@ -20,7 +20,8 @@ class App extends Component {
         super(props);
 
         this.state = {
-            audioItem: null
+            audioUrl: null,
+            annotations: []
         };
     }
 
@@ -28,13 +29,16 @@ class App extends Component {
         const { classes } = this.props;
         return (
             <Container className={classes.App} maxWidth={false}>
-                {this.state.audioItem == null ? (
+                {this.state.audioUrl == null ? (
                     <RecordingScreen
-                        onAudioItemAdded={this._onAudioItemAdded}
+                        annotations={this.state.annotations}
+                        onAudioUrlAdded={this._onAudioUrlAdded}
+                        onAnnotationAdded={this._onAnnotationAdded}
                     />
                 ) : (
                     <SummaryScreen
-                        audioItem={this.state.audioItem}
+                        audioUrl={this.state.audioUrl}
+                        annotations={this.state.annotations}
                         onReset={this._onReset}
                     />
                 )}
@@ -42,15 +46,24 @@ class App extends Component {
         );
     }
 
-    _onAudioItemAdded = audioItem => {
+    _onAudioUrlAdded = url => {
         this.setState({
-            audioItem: audioItem
+            audioUrl: url
+        });
+    };
+
+    _onAnnotationAdded = annotation => {
+        this.setState(state => {
+            return {
+                ...state,
+                annotations: [...state.annotations, annotation]
+            };
         });
     };
 
     _onReset = () => {
         this.setState({
-            audioItem: null
+            audioUrl: null
         });
     };
 }

@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import RecordingState from "./RecordingState";
 import { withStyles } from "@material-ui/styles";
+import Utils from "./Utils";
 
 const BAR_WIDTH_PX = 3;
 const REFRESH_INTERVAL_MS = 60;
@@ -37,9 +38,9 @@ class AudioVisualizer extends Component {
         if (prevState.audioArray !== this.state.audioArray) {
             this._draw();
         }
-        const prevAudioItem = prevProps.audioItem;
-        const audioItem = this.props.audioItem;
-        if (!prevAudioItem.hasMedia() && audioItem.hasMedia()) {
+        const prevStream = prevProps.stream;
+        const stream = this.props.stream;
+        if (prevStream == null && stream != null) {
             this.audioContext = new (window.AudioContext ||
                 window.webkitAudioContext)();
 
@@ -47,13 +48,9 @@ class AudioVisualizer extends Component {
             this.analyser.smoothingTimeConstant = 0;
             this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
 
-            if (audioItem.stream) {
-                this.source = this.audioContext.createMediaStreamSource(
-                    audioItem.stream
-                );
+            if (stream) {
+                this.source = this.audioContext.createMediaStreamSource(stream);
                 this.source.connect(this.analyser);
-            } else if (audioItem.url) {
-                console.log("HAVE URL");
             }
 
             this.timerID = setInterval(() => {
@@ -61,7 +58,7 @@ class AudioVisualizer extends Component {
                     this._onRefreshVisualizer();
                 }
             }, REFRESH_INTERVAL_MS);
-        } else if (prevProps.audioStream && this.props.audioStream == null) {
+        } else if (prevStream && stream == null) {
             this.setState({
                 audioArray: [],
                 width: CANVAS_MIN_WIDTH
@@ -92,9 +89,10 @@ class AudioVisualizer extends Component {
 
         let newAudioArray = [...this.state.audioArray];
         const currentAnnotation =
-            this.props.audioItem &&
-            this.props.audioItem.getAnnotationForTimestamp(
-                this.props.elapsedTimeMs
+            this.props.annotations &&
+            Utils.getAnnotationForTimestamp(
+                this.props.elapsedTimeMs,
+                this.props.annotations
             );
         if (currentAnnotation != null) {
             const annotatedValues = this.state.audioArray
