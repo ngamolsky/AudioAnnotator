@@ -2,7 +2,6 @@ import React from "react";
 import { withStyles } from "@material-ui/styles";
 import Fab from "@material-ui/core/Fab";
 import Mic from "@material-ui/icons/Mic";
-import ReplayIcon from "@material-ui/icons/Replay";
 import Stop from "@material-ui/icons/Stop";
 import RecordingState from "./RecordingState";
 
@@ -10,8 +9,6 @@ import red from "@material-ui/core/colors/red";
 
 const styles = {
     RecordingButton: {
-        height: "60px",
-        width: "60px",
         marginBottom: "70px",
         backgroundColor: red["600"],
         "&:hover": {
@@ -37,8 +34,6 @@ class RecordButton extends React.Component {
             >
                 {this.props.recordingState === RecordingState.RECORDING ? (
                     <Stop className={classes.RecordingButtonLabel} />
-                ) : this.props.hasRecording ? (
-                    <ReplayIcon className={classes.RecordingButtonLabel} />
                 ) : (
                     <Mic className={classes.RecordingButtonLabel} />
                 )}

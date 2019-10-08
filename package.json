@@ -13,6 +13,7 @@
     "react-hot-loader": "^4.12.14",
     "react-scripts": "^2.1.8",
     "recordrtc": "^5.5.8",
+    "typeface-roboto": "0.0.75",
     "uuid": "^3.3.3"
   },
   "scripts": {

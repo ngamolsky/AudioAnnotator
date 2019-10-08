@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import RecordingState from "./RecordingState";
 import { withStyles } from "@material-ui/styles";
 
-const BAR_WIDTH_PX = 6;
+const BAR_WIDTH_PX = 3;
 const REFRESH_INTERVAL_MS = 60;
 const CANVAS_MIN_WIDTH = 1000;
 
@@ -142,7 +142,7 @@ class AudioVisualizer extends Component {
         context.clearRect(0, 0, width, height);
 
         this.state.audioArray.forEach((chunk, index) => {
-            const barHeight = 5 + chunk.amplitude;
+            const barHeight = 2 + chunk.amplitude;
             const opacity = 0.2 + barHeight / 50;
             const redColor = "rgba(244, 67, 54," + opacity + ")";
             const goldColor = "rgba(255, 196, 0," + opacity + ")";
