@@ -54,6 +54,7 @@ class App extends Component {
 
     _onAnnotationAdded = annotation => {
         this.setState(state => {
+            console.log(state);
             return {
                 ...state,
                 annotations: [...state.annotations, annotation]
@@ -63,7 +64,8 @@ class App extends Component {
 
     _onReset = () => {
         this.setState({
-            audioUrl: null
+            audioUrl: null,
+            annotations: []
         });
     };
 }

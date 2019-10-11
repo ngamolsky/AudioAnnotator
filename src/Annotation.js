@@ -6,6 +6,14 @@ export class Annotation {
         this.totalDuration = totalDuration;
         this.type = type;
     }
+
+    getStartTimeMs = () => {
+        return this.timestamp - this.totalDuration / 2;
+    };
+
+    getEndTimeMs = () => {
+        return this.timestamp + this.totalDuration / 2;
+    };
 }
 
 export class ActionItemAnnotation extends Annotation {
