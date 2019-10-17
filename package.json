@@ -11,6 +11,7 @@
     "react-audio-player": "^0.11.1",
     "react-dom": "^16.8.3",
     "react-hot-loader": "^4.12.14",
+    "react-measure": "^2.3.0",
     "react-scripts": "^2.1.8",
     "recordrtc": "^5.5.8",
     "typeface-roboto": "0.0.75",

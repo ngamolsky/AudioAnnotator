@@ -12,8 +12,8 @@ const Utils = {
         return `${minutes}:${seconds}.${millis}`;
     },
 
-    getAnnotationForTimestamp: (timeStampMs, annotations) => {
-        let resultAnnotation = null;
+    getAnnotationsForTimestamp: (timeStampMs, annotations) => {
+        let resultAnnotations = [];
         annotations.forEach(annotation => {
             if (
                 timeStampMs <
@@ -21,10 +21,10 @@ const Utils = {
                 timeStampMs >
                     annotation.timestamp - annotation.totalDuration / 2
             ) {
-                resultAnnotation = annotation;
+                resultAnnotations.push(annotation);
             }
         });
-        return resultAnnotation;
+        return resultAnnotations;
     }
 };
 

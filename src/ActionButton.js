@@ -1,39 +1,42 @@
 import React, { Component } from "react";
 import { withStyles } from "@material-ui/styles";
-import Button from "@material-ui/core/Button";
+import { Badge, Button } from "@material-ui/core";
 
-import { red, grey } from "@material-ui/core/colors/";
-
-const styles = {
-    ActionButton: {
-        height: "60px",
-        width: "200px",
-        fontSize: 24,
-        backgroundColor: props => (props.disabled ? grey["500"] : red["500"]),
-        "&:hover": {
-            backgroundColor: red["200"]
+const styles = theme => {
+    return {
+        ActionButton: {
+            height: "60px",
+            width: "200px",
+            fontSize: 24,
+            fontWeight: "lighter"
         },
-        color: "#fff",
-        fontWeight: "lighter",
-        marginTop: "20px",
-        marginBottom: "60px"
-    }
+        Badge: {
+            margin: theme.spacing(2)
+        }
+    };
 };
 
 class ActionButton extends Component {
     render() {
-        const { classes } = this.props;
-
+        const { classes, annotationCount } = this.props;
         return (
-            <Button
-                className={classes.ActionButton}
-                onClick={() => {
-                    this.props.onAnnotationButtonClicked(this.props.name);
-                }}
-                disabled={this.props.disabled}
+            <Badge
+                color="primary"
+                badgeContent={annotationCount}
+                className={classes.Badge}
             >
-                {this.props.name}
-            </Button>
+                <Button
+                    color="primary"
+                    variant="contained"
+                    className={classes.ActionButton}
+                    onClick={() => {
+                        this.props.onAnnotationButtonClicked(this.props.name);
+                    }}
+                    disabled={this.props.disabled}
+                >
+                    {this.props.name}
+                </Button>
+            </Badge>
         );
     }
 }

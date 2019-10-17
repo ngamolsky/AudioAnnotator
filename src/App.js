@@ -3,15 +3,27 @@ import React, { Component } from "react";
 import RecordingScreen from "./RecordingScreen";
 import SummaryScreen from "./SummaryScreen";
 
-import blueGrey from "@material-ui/core/colors/blueGrey";
-import { withStyles } from "@material-ui/styles";
+import { indigo } from "@material-ui/core/colors/";
+import { withStyles, ThemeProvider } from "@material-ui/styles";
+import { createMuiTheme } from "@material-ui/core/styles";
+
 import Container from "@material-ui/core/Container";
+
+const theme = createMuiTheme({
+    palette: {
+        primary: {
+            main: "#e53935"
+        },
+        secondary: indigo,
+        type: "dark"
+    }
+});
 
 const styles = {
     App: {
         height: "100%",
         textAlign: "center",
-        background: blueGrey[800]
+        background: theme.palette.background.default
     }
 };
 
@@ -28,21 +40,24 @@ class App extends Component {
     render() {
         const { classes } = this.props;
         return (
-            <Container className={classes.App} maxWidth={false}>
-                {this.state.audioUrl == null ? (
+            <ThemeProvider theme={theme}>
+                <Container className={classes.App} maxWidth={false}>
                     <RecordingScreen
                         annotations={this.state.annotations}
                         onAudioUrlAdded={this._onAudioUrlAdded}
                         onAnnotationAdded={this._onAnnotationAdded}
                     />
-                ) : (
-                    <SummaryScreen
-                        audioUrl={this.state.audioUrl}
-                        annotations={this.state.annotations}
-                        onReset={this._onReset}
-                    />
-                )}
-            </Container>
+                    {/* {this.state.audioUrl == null ? (
+                        
+                    ) : (
+                        <SummaryScreen
+                            audioUrl={this.state.audioUrl}
+                            annotations={this.state.annotations}
+                            onReset={this._onReset}
+                        />
+                    )} */}
+                </Container>
+            </ThemeProvider>
         );
     }
 

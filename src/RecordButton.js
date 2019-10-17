@@ -9,7 +9,6 @@ import red from "@material-ui/core/colors/red";
 
 const styles = {
     RecordingButton: {
-        marginBottom: "70px",
         backgroundColor: red["600"],
         "&:hover": {
             backgroundColor: red["200"]

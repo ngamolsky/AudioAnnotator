@@ -1,14 +1,23 @@
 import React, { Component } from "react";
+import Measure from "react-measure";
+
 import RecordingState from "./RecordingState";
 import { withStyles } from "@material-ui/styles";
 import Utils from "./Utils";
 
-const BAR_WIDTH_PX = 6;
 const REFRESH_INTERVAL_MS = 60;
-const CANVAS_WIDTH_PX = 1000;
-const CANVAS_HEIGHT_PX = 300;
+const MAX_BARD_WIDTH = 6;
 
-const styles = {};
+const styles = {
+    Canvas: {
+        display: "block"
+    },
+    Visualizer: {
+        width: "80%",
+        height: "200px",
+        margin: "auto"
+    }
+};
 
 class AudioVisualizer extends Component {
     constructor(props) {
@@ -19,7 +28,12 @@ class AudioVisualizer extends Component {
             mousePosition: {
                 x: 0,
                 y: 0
-            }
+            },
+            canvasSize: {
+                width: -1,
+                height: -1
+            },
+            totalArray: []
         };
         this.canvas = React.createRef();
     }
@@ -49,14 +63,21 @@ class AudioVisualizer extends Component {
                 }
             }, REFRESH_INTERVAL_MS);
         } else if (prevStream && stream == null) {
-            this.setState({
-                audioArray: []
-            });
+            this.setState(
+                state => {
+                    return {
+                        ...state,
+                        audioArray: []
+                    };
+                },
+                () => {
+                    console.log("WHY");
+                    this._draw();
+                }
+            );
         }
-    };
 
-    componentDidMount = () => {
-        if (this.canvas) {
+        if (prevState.canvasSize.width < 0 && this.state.canvasSize.width > 0) {
             this.canvas.current.addEventListener("mousemove", event => {
                 var rect = event.target.getBoundingClientRect();
                 this.setState({
@@ -90,56 +111,32 @@ class AudioVisualizer extends Component {
         for (var i = 0; i < this.dataArray.length; i++) {
             values += this.dataArray[i];
         }
-
-        const average_amplitude = values / this.dataArray.length;
+        const averageAmplitude = values / this.dataArray.length;
 
         this.setState(state => {
             let newAudioArray = [...state.audioArray];
             if (
-                this.state.audioArray.length >=
-                Math.floor(CANVAS_WIDTH_PX / BAR_WIDTH_PX)
+                state.audioArray.length >=
+                Math.floor(state.canvasSize.width / MAX_BARD_WIDTH)
             ) {
                 newAudioArray.shift();
             }
 
-            const currentAnnotation =
-                this.props.annotations &&
-                Utils.getAnnotationForTimestamp(
-                    this.props.elapsedTimeMs,
-                    this.props.annotations
-                );
-            if (currentAnnotation != null) {
-                const annotatedValues = state.audioArray
-                    .slice(
-                        -(
-                            currentAnnotation.totalDuration /
-                            2 /
-                            REFRESH_INTERVAL_MS
-                        )
-                    )
-                    .map(chunk => ({
-                        amplitude: chunk.amplitude,
-                        timestamp: chunk.timestamp,
-                        selected: chunk.selected,
-                        x: chunk.x,
-                        annotated: true
-                    }));
-
-                newAudioArray.splice(
-                    newAudioArray.length - annotatedValues.length,
-                    currentAnnotation.totalDuration / 2 / REFRESH_INTERVAL_MS,
-                    ...annotatedValues
-                );
-            }
             return {
                 audioArray: [
                     ...newAudioArray,
                     {
-                        amplitude: average_amplitude,
+                        amplitude: averageAmplitude,
                         timestamp: this.props.elapsedTimeMs,
-                        x: Math.floor(BAR_WIDTH_PX * state.audioArray.length),
-                        selected: false,
-                        annotated: currentAnnotation != null
+                        x: Math.floor(MAX_BARD_WIDTH * state.audioArray.length)
+                    }
+                ],
+                totalArray: [
+                    ...state.totalArray,
+                    {
+                        amplitude: averageAmplitude,
+                        timestamp: this.props.elapsedTimeMs,
+                        x: Math.floor(MAX_BARD_WIDTH * state.audioArray.length)
                     }
                 ]
             };
@@ -152,56 +149,104 @@ class AudioVisualizer extends Component {
         if (canvas) {
             const height = canvas.height;
             const width = canvas.width;
-
+            const arrayLength = this.state.audioArray.length;
             const context = canvas.getContext("2d");
-
             context.clearRect(0, 0, width, height);
 
-            this.state.audioArray.forEach((chunk, index) => {
-                const barHeight = 2 + chunk.amplitude;
-                const opacity = 0.2 + barHeight / 50;
-                const redColor = "rgba(244, 67, 54," + opacity + ")";
-                const goldColor = "rgba(255, 196, 0," + opacity + ")";
-                const whiteColor = "rgb(255, 255, 255)";
-                const rect = {
-                    x: index * BAR_WIDTH_PX,
-                    y: height / 2 - barHeight,
-                    width: BAR_WIDTH_PX * 0.6,
-                    height: barHeight * 2
-                };
+            if (arrayLength === 0) {
+                this.state.totalArray.forEach((chunk, index) => {
+                    const currentAnnotations = Utils.getAnnotationsForTimestamp(
+                        chunk.timestamp,
+                        this.props.annotations ? this.props.annotations : []
+                    );
 
-                if (
-                    this.state.mousePosition.x > rect.x &&
-                    this.state.mousePosition.x < rect.x + BAR_WIDTH_PX
-                ) {
-                    chunk.selected = true;
-                } else {
-                    chunk.selected = false;
-                }
+                    const barHeight = 2 + chunk.amplitude;
+                    const barWidth =
+                        this.state.canvasSize.width /
+                        this.state.totalArray.length;
+                    const redOpacity = 0.2 + barHeight / 50;
+                    const whiteOpacity = currentAnnotations.length / 5;
+                    const redColor = "rgba(244, 67, 54," + redOpacity + ")";
+                    const goldColor = "rgba(255, 196, 0," + redOpacity + ")";
+                    const whiteColor =
+                        "rgba(255, 255, 255, " + whiteOpacity + ")";
+                    const rect = {
+                        x:
+                            width -
+                            (this.state.totalArray.length - index) * barWidth,
+                        y: height / 2 - barHeight,
+                        width: barWidth * 0.6,
+                        height: barHeight * 2
+                    };
 
-                context.fillStyle = chunk.selected
-                    ? whiteColor
-                    : chunk.annotated
-                    ? goldColor
-                    : redColor;
+                    console.log(rect);
 
-                context.fillRect(
-                    index * BAR_WIDTH_PX,
-                    height / 2 - barHeight,
-                    BAR_WIDTH_PX * 0.6,
-                    barHeight * 2
-                );
-            });
+                    const isMouseOverRect =
+                        this.state.mousePosition.x > rect.x &&
+                        this.state.mousePosition.x < rect.x + barWidth;
+
+                    context.fillStyle =
+                        currentAnnotations.length > 0 ? whiteColor : redColor;
+
+                    context.fillRect(rect.x, rect.y, rect.width, rect.height);
+                });
+            } else {
+                this.state.audioArray.forEach((chunk, index) => {
+                    const currentAnnotations = Utils.getAnnotationsForTimestamp(
+                        chunk.timestamp,
+                        this.props.annotations ? this.props.annotations : []
+                    );
+
+                    const barHeight = 2 + chunk.amplitude;
+                    const redOpacity = 0.2 + barHeight / 50;
+                    const whiteOpacity = currentAnnotations.length / 5;
+                    const redColor = "rgba(244, 67, 54," + redOpacity + ")";
+                    const goldColor = "rgba(255, 196, 0," + redOpacity + ")";
+                    const whiteColor =
+                        "rgba(255, 255, 255, " + whiteOpacity + ")";
+                    const rect = {
+                        x: width - (arrayLength - index) * MAX_BARD_WIDTH,
+                        y: height / 2 - barHeight,
+                        width: MAX_BARD_WIDTH * 0.6,
+                        height: barHeight * 2
+                    };
+
+                    const isMouseOverRect =
+                        this.state.mousePosition.x > rect.x &&
+                        this.state.mousePosition.x < rect.x + MAX_BARD_WIDTH;
+
+                    context.fillStyle =
+                        currentAnnotations.length > 0 ? whiteColor : redColor;
+
+                    context.fillRect(rect.x, rect.y, rect.width, rect.height);
+                });
+            }
         }
     };
 
     render() {
+        const { classes } = this.props;
         return (
-            <canvas
-                ref={this.canvas}
-                height={CANVAS_HEIGHT_PX}
-                width={CANVAS_WIDTH_PX}
-            />
+            this.state.canvasSize != null && (
+                <Measure
+                    bounds
+                    margin
+                    onResize={contentRect => {
+                        this.setState({ canvasSize: contentRect.bounds });
+                    }}
+                >
+                    {({ measureRef }) => (
+                        <div ref={measureRef} className={classes.Visualizer}>
+                            <canvas
+                                className={classes.Canvas}
+                                ref={this.canvas}
+                                height={this.state.canvasSize.height}
+                                width={this.state.canvasSize.width}
+                            />
+                        </div>
+                    )}
+                </Measure>
+            )
         );
     }
 }
