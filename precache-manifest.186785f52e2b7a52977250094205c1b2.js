@@ -4,19 +4,19 @@ self.__precacheManifest = [
     "url": "/AudioAnnotator/static/js/runtime~main.6a88d765.js"
   },
   {
-    "revision": "e14c27f59a90211127b6",
-    "url": "/AudioAnnotator/static/js/main.2a92082c.chunk.js"
+    "revision": "31604412e01561376eec",
+    "url": "/AudioAnnotator/static/js/main.e843f6fa.chunk.js"
   },
   {
     "revision": "38415c77e926e2d6b18a",
     "url": "/AudioAnnotator/static/js/2.fd96d177.chunk.js"
   },
   {
-    "revision": "e14c27f59a90211127b6",
+    "revision": "31604412e01561376eec",
     "url": "/AudioAnnotator/static/css/main.2792e9b7.chunk.css"
   },
   {
-    "revision": "aa18f0d81a2c909c7648f0fd7ab22ea9",
+    "revision": "72c7410454ff826730b8a3aad285b412",
     "url": "/AudioAnnotator/index.html"
   }
 ];

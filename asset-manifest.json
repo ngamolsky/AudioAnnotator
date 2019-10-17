@@ -1,13 +1,13 @@
 {
   "main.css": "/AudioAnnotator/static/css/main.2792e9b7.chunk.css",
-  "main.js": "/AudioAnnotator/static/js/main.2a92082c.chunk.js",
-  "main.js.map": "/AudioAnnotator/static/js/main.2a92082c.chunk.js.map",
+  "main.js": "/AudioAnnotator/static/js/main.e843f6fa.chunk.js",
+  "main.js.map": "/AudioAnnotator/static/js/main.e843f6fa.chunk.js.map",
   "runtime~main.js": "/AudioAnnotator/static/js/runtime~main.6a88d765.js",
   "runtime~main.js.map": "/AudioAnnotator/static/js/runtime~main.6a88d765.js.map",
   "static/js/2.fd96d177.chunk.js": "/AudioAnnotator/static/js/2.fd96d177.chunk.js",
   "static/js/2.fd96d177.chunk.js.map": "/AudioAnnotator/static/js/2.fd96d177.chunk.js.map",
   "index.html": "/AudioAnnotator/index.html",
-  "precache-manifest.7df319e64d43575e9c2bd3a8ed86a49c.js": "/AudioAnnotator/precache-manifest.7df319e64d43575e9c2bd3a8ed86a49c.js",
+  "precache-manifest.186785f52e2b7a52977250094205c1b2.js": "/AudioAnnotator/precache-manifest.186785f52e2b7a52977250094205c1b2.js",
   "service-worker.js": "/AudioAnnotator/service-worker.js",
   "static/css/main.2792e9b7.chunk.css.map": "/AudioAnnotator/static/css/main.2792e9b7.chunk.css.map"
 }
