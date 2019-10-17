@@ -167,7 +167,6 @@ class AudioVisualizer extends Component {
                     const redOpacity = 0.2 + barHeight / 50;
                     const whiteOpacity = currentAnnotations.length / 5;
                     const redColor = "rgba(244, 67, 54," + redOpacity + ")";
-                    const goldColor = "rgba(255, 196, 0," + redOpacity + ")";
                     const whiteColor =
                         "rgba(255, 255, 255, " + whiteOpacity + ")";
                     const rect = {
@@ -178,8 +177,6 @@ class AudioVisualizer extends Component {
                         width: barWidth * 0.6,
                         height: barHeight * 2
                     };
-
-                    console.log(rect);
 
                     const isMouseOverRect =
                         this.state.mousePosition.x > rect.x &&
@@ -201,7 +198,6 @@ class AudioVisualizer extends Component {
                     const redOpacity = 0.2 + barHeight / 50;
                     const whiteOpacity = currentAnnotations.length / 5;
                     const redColor = "rgba(244, 67, 54," + redOpacity + ")";
-                    const goldColor = "rgba(255, 196, 0," + redOpacity + ")";
                     const whiteColor =
                         "rgba(255, 255, 255, " + whiteOpacity + ")";
                     const rect = {

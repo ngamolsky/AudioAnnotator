@@ -42,20 +42,19 @@ class App extends Component {
         return (
             <ThemeProvider theme={theme}>
                 <Container className={classes.App} maxWidth={false}>
-                    <RecordingScreen
-                        annotations={this.state.annotations}
-                        onAudioUrlAdded={this._onAudioUrlAdded}
-                        onAnnotationAdded={this._onAnnotationAdded}
-                    />
-                    {/* {this.state.audioUrl == null ? (
-                        
+                    {this.state.audioUrl == null ? (
+                        <RecordingScreen
+                            annotations={this.state.annotations}
+                            onAudioUrlAdded={this._onAudioUrlAdded}
+                            onAnnotationAdded={this._onAnnotationAdded}
+                        />
                     ) : (
                         <SummaryScreen
                             audioUrl={this.state.audioUrl}
                             annotations={this.state.annotations}
                             onReset={this._onReset}
                         />
-                    )} */}
+                    )}
                 </Container>
             </ThemeProvider>
         );
